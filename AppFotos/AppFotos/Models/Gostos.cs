@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AppFotos.Models {
 
@@ -6,6 +8,7 @@ namespace AppFotos.Models {
    /// regista os 'gostos' que um utilizador da app tem
    /// pelas fotografias existentes
    /// </summary>
+   [PrimaryKey(nameof(UtilizadorFK),nameof(FotografiaFK))]
    public class Gostos {
 
       /// <summary>

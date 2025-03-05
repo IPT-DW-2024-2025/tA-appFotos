@@ -10,6 +10,7 @@ namespace AppFotos.Models {
       /// <summary>
       /// Identificador do utilizador
       /// </summary>
+      [Key]
       public int Id { get; set; }
 
       /// <summary>

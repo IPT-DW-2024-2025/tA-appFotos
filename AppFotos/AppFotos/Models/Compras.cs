@@ -11,6 +11,7 @@ namespace AppFotos.Models {
       /// <summary>
       /// Identificador da compra
       /// </summary>
+      [Key]  // PK, int, autonumber
       public int Id { get; set; }
 
       /// <summary>

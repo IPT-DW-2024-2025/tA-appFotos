@@ -14,6 +14,7 @@ namespace AppFotos.Models {
       /// <summary>
       /// identificador da fotografia
       /// </summary>
+      [Key]
       public int Id { get; set; }
 
       /// <summary>
