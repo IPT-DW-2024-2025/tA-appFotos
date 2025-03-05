@@ -1,4 +1,6 @@
-﻿namespace AppFotos.Models {
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace AppFotos.Models {
 
    /// <summary>
    /// utilizadores não anónimos da aplicação
@@ -40,6 +42,27 @@
       /// </summary>
       public string Telemovel { get; set; }
 
+
+      /* *************************
+     * Definção dos relacionamentos
+     * ************************** 
+     */
+
+      /// <summary>
+      /// Lista das fotografias que são propriedade do 
+      /// utilizador
+      /// </summary>
+      public ICollection<Fotografias> ListaFotos { get; set; }
+
+      /// <summary>
+      /// Lista dos 'gostos' de fotografias do utilizador
+      /// </summary>
+      public ICollection<Gostos> ListaGostos { get; set; }
+
+      /// <summary>
+      /// Lista das fotografias compradas pelo utilizador
+      /// </summary>
+      public ICollection<Compras> ListaCompras { get; set; }
 
 
 

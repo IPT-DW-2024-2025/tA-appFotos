@@ -1,4 +1,10 @@
-﻿namespace AppFotos.Models {
+﻿using Microsoft.CodeAnalysis.Operations;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AppFotos.Models {
 
    /// <summary>
    /// Fotografias disponíveis na aplicação
@@ -35,6 +41,50 @@
       /// Preço de venda da fotografia
       /// </summary>
       public decimal Preco { get; set; }
+
+
+      /* *************************
+       * Definção dos relacionamentos
+       * ************************** 
+       */
+
+
+      // Relacionamentos 1-N
+
+
+      /// <summary>
+      /// FK para a tabela das Categorias
+      /// </summary>
+      [ForeignKey(nameof(Categoria))]
+      public int CategoriaFK { get; set; }
+      /// <summary>
+      /// FK para as Categorias
+      /// </summary>
+      public Categorias Categoria { get; set; }
+
+      /// <summary>
+      /// FK para referenciar o Dono da fotografia
+      /// </summary>
+      [ForeignKey(nameof(Dono))]
+      public int DonoFK { get; set; }
+      /// <summary>
+      /// FK para referenciar o Dono da fotografia
+      /// </summary>
+      public Utilizadores Dono { get; set; }
+
+
+      // M-N
+
+      /// <summary>
+      /// Lista de 'gostos' de uma fotografia
+      /// </summary>
+      public ICollection<Gostos> ListaGostos { get; set; }
+
+      /// <summary>
+      /// Lista de 'compras' que compraram a fotografia
+      /// </summary>
+      public ICollection<Compras> ListaCompras { get; set; }
+
 
    }
 }
