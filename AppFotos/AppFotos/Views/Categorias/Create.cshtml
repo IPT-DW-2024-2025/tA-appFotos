@@ -1,0 +1,41 @@
+﻿@model AppFotos.Models.Categorias
+@* Esta view está a manipular um único objeto do tipo Categorias *@
+
+@{
+   ViewData["Title"] = "Criar Categoria";
+}
+
+<h1>Adicionar Categorias</h1>
+
+<hr />
+<div class="row">
+   <div class="col-md-4">
+      <form asp-action="Create">
+
+         @* mostra as mensagens de erro *@
+         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+
+         <div class="form-group">
+            <label asp-for="Categoria" class="control-label"></label>
+            <input asp-for="Categoria" class="form-control" />
+            <span asp-validation-for="Categoria" class="text-danger"></span>
+         </div>
+         &nbsp;<br />
+         <div class="form-group">
+            <input type="submit" value="Guardar" class="btn btn-primary" />
+         </div>
+      </form>
+   </div>
+</div>
+
+<div>
+   <a asp-action="Index">Regressar</a>
+</div>
+
+@section Scripts {
+   @{
+      await Html.RenderPartialAsync("_ValidationScriptsPartial");
+   }
+}
