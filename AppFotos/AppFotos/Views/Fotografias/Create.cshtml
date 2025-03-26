@@ -9,7 +9,11 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        @* para 'levar' ficheiros do browser para o servidor é necessário
+           informar o <form> disso, através do parâmetro enctype="multipart/form-data"
+        *@
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Titulo" class="control-label"></label>
@@ -23,7 +27,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="Ficheiro" class="control-label"></label>
-                <input asp-for="Ficheiro" class="form-control" />
+                @* <input asp-for="Ficheiro" class="form-control" /> *@
+                <input type="file" 
+                       accept=".png,.jpeg,.jpg"
+                       name="imagemFoto"
+                       class="form-control"
+                    />
                 <span asp-validation-for="Ficheiro" class="text-danger"></span>
             </div>
             <div class="form-group">

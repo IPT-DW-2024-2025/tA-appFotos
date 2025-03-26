@@ -83,7 +83,7 @@ namespace AppFotos.Controllers {
       // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
       [HttpPost]
       [ValidateAntiForgeryToken]
-      public async Task<IActionResult> Create([Bind("Titulo,Descricao,Ficheiro,Data,PrecoAux,CategoriaFK,DonoFK")] Fotografias fotografia) {
+      public async Task<IActionResult> Create([Bind("Titulo,Descricao,Ficheiro,Data,PrecoAux,CategoriaFK,DonoFK")] Fotografias fotografia, IFormFile imagemFoto) {
          // vars. auxiliar
          bool haErro = false;
 
@@ -103,6 +103,30 @@ namespace AppFotos.Controllers {
             ModelState.AddModelError("", "Tem de escolher um Dono");
          }
 
+         /* Avaliar o ficheiro fornecido
+          * - há ficheiro?
+          *   - se não existir ficheiro, gerar msg erro e devolver à view o controlo
+          *   - se há,
+          *     - será uma imagem?
+          *       - se não for, gerar msg erro e devolver à view o controlo
+          *       - é,
+          *         - determinar novo nome do ficheiro
+          *         - guardar na BD o nome do ficheiro
+          *         - guardar o ficheiro no disco rígido do servidor
+          */
+         if (imagemFoto == null) {
+            // não há imagem
+            haErro = true;
+            // construo a msg de erro
+            ModelState.AddModelError("", "Tem de submeter uma Fotografia");
+         }
+         else {
+            // há ficheiro. Mas, é uma imagem?
+
+         }
+
+
+
          // Avalia se os dados estão de acordo com o Model
          if (ModelState.IsValid && !haErro) {
             // transferir o valor do PrecoAux para o Preco
@@ -111,7 +135,7 @@ namespace AppFotos.Controllers {
             fotografia.Preco = Convert.ToDecimal(fotografia.PrecoAux.Replace('.', ','),
                                                  new CultureInfo("pt-PT"));
 
-            
+
             // adicionar os dados da nova fotografia na BD
             _context.Add(fotografia);
             await _context.SaveChangesAsync();
