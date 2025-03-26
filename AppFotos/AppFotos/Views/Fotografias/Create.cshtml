@@ -31,10 +31,11 @@
                 <input asp-for="Data" class="form-control" />
                 <span asp-validation-for="Data" class="text-danger"></span>
             </div>
+            @* para processar o Preço, vamos usar o novo atributo: PrecoAux *@
             <div class="form-group">
-                <label asp-for="Preco" class="control-label"></label>
-                <input asp-for="Preco" class="form-control" />
-                <span asp-validation-for="Preco" class="text-danger"></span>
+                <label asp-for="PrecoAux" class="control-label"></label>
+                <input asp-for="PrecoAux" class="form-control" />
+                <span asp-validation-for="PrecoAux" class="text-danger"></span>
             </div>
             @* estes SELECT são as 'dropdowns' da escolha da Categoria e Utilizador *@
             <div class="form-group">

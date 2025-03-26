@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AppFotos.Data;
 using AppFotos.Models;
+using System.Globalization;
 
 namespace AppFotos.Controllers {
    public class FotografiasController: Controller {
@@ -26,7 +27,7 @@ namespace AppFotos.Controllers {
           *                    INNER JOIN Utilizadores u ON f.DonoFK = u.Id
           */
          var listaFotografias = _context.Fotografias.Include(f => f.Categoria).Include(f => f.Dono);
-       
+
          return View(await listaFotografias.ToListAsync());
       }
 
@@ -64,13 +65,13 @@ namespace AppFotos.Controllers {
          // SELECT *
          // FROM Categorias c
          // ORDER BY c.Categoria
-         ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c=>c.Categoria), "Id", "Categoria");
+         ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria");
          // SELECT *
          // FROM Utilizadores u
          // ORDER BY u.Nome
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u=>u.Nome), "Id", "Nome");
-        
-         
+         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome");
+
+
          return View();
       }
 
@@ -82,14 +83,14 @@ namespace AppFotos.Controllers {
       // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
       [HttpPost]
       [ValidateAntiForgeryToken]
-      public async Task<IActionResult> Create([Bind("Titulo,Descricao,Ficheiro,Data,Preco,CategoriaFK,DonoFK")] Fotografias fotografia) {
+      public async Task<IActionResult> Create([Bind("Titulo,Descricao,Ficheiro,Data,PrecoAux,CategoriaFK,DonoFK")] Fotografias fotografia) {
          // vars. auxiliar
-         bool haErro=false;
+         bool haErro = false;
 
          // Avaliar se há Categoria
          if (fotografia.CategoriaFK <= 0) {
             // Erro. Não foi escolhida uma categoria
-            haErro=true;
+            haErro = true;
             // crio msg de erro
             ModelState.AddModelError("", "Tem de escolher uma Categoria");
          }
@@ -97,21 +98,29 @@ namespace AppFotos.Controllers {
          // Avaliar se há Utilizador
          if (fotografia.DonoFK <= 0) {
             // Erro. Não foi escolhida um dono
-            haErro =true;
+            haErro = true;
             // construo a msg de erro
             ModelState.AddModelError("", "Tem de escolher um Dono");
          }
 
          // Avalia se os dados estão de acordo com o Model
          if (ModelState.IsValid && !haErro) {
+            // transferir o valor do PrecoAux para o Preco
+            // há necessidade de tratar a questão do . no meio da string
+            // há necessidade de garantir que a conversão é feita segundo uma 'cultura' pre-definida
+            fotografia.Preco = Convert.ToDecimal(fotografia.PrecoAux.Replace('.', ','),
+                                                 new CultureInfo("pt-PT"));
+
+            
+            // adicionar os dados da nova fotografia na BD
             _context.Add(fotografia);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
          }
 
-         ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c=>c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u=>u.Nome), "Id", "Nome", fotografia.DonoFK);
-      
+         ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
+         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
+
          // Se chego aqui é pq algo correu mal...
          return View(fotografia);
       }
@@ -129,8 +138,8 @@ namespace AppFotos.Controllers {
          if (fotografia == null) {
             return NotFound();
          }
-         ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c=>c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u=>u.Nome), "Id", "Nome", fotografia.DonoFK);
+         ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
+         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
          return View(fotografia);
       }
 
