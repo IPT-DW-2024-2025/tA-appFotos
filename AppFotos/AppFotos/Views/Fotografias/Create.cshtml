@@ -1,12 +1,11 @@
 ﻿@model AppFotos.Models.Fotografias
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Adicionar Foto";
 }
 
-<h1>Create</h1>
+<h1>Adicionar Fotografia</h1>
 
-<h4>Fotografias</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -37,13 +36,22 @@
                 <input asp-for="Preco" class="form-control" />
                 <span asp-validation-for="Preco" class="text-danger"></span>
             </div>
+            @* estes SELECT são as 'dropdowns' da escolha da Categoria e Utilizador *@
             <div class="form-group">
                 <label asp-for="CategoriaFK" class="control-label"></label>
-                <select asp-for="CategoriaFK" class ="form-control" asp-items="ViewBag.CategoriaFK"></select>
+                <select asp-for="CategoriaFK" 
+                        class ="form-control" 
+                        asp-items="ViewBag.CategoriaFK">
+                    <option value="0">Escolha uma categoria, por favor</option>
+                </select>
             </div>
             <div class="form-group">
                 <label asp-for="DonoFK" class="control-label"></label>
-                <select asp-for="DonoFK" class ="form-control" asp-items="ViewBag.DonoFK"></select>
+                <select asp-for="DonoFK" 
+                        class ="form-control" 
+                        asp-items="ViewBag.DonoFK">
+                    <option value="0">Escolha um utilizador, por favor</option>
+                </select>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
