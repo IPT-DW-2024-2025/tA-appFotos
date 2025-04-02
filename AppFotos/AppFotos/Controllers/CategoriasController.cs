@@ -88,7 +88,7 @@ namespace AppFotos.Controllers {
          // se chego aqui, há 'categoria' para editar
 
          // guardar os dados do objeto que vai ser enviado para o browser do utilizador
-         HttpContext.Session.SetInt32("CategoriaID",categoria.Id);
+         HttpContext.Session.SetInt32("CategoriaID", categoria.Id);
 
          // mostro a View
          return View(categoria);
@@ -99,14 +99,38 @@ namespace AppFotos.Controllers {
       // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
       [HttpPost]
       [ValidateAntiForgeryToken]
-      public async Task<IActionResult> Edit(int id, [Bind("Id,Categoria")] Categorias categoriaAlterada) {
+      public async Task<IActionResult> Edit([FromRoute] int id, [Bind("Id,Categoria")] Categorias categoriaAlterada) {
+         // A anotação [FromRoute] lê o valor do ID da rota
+         // se houve alterações à 'rota', há alterações indevidas
          if (id != categoriaAlterada.Id) {
-            return NotFound();
+            return RedirectToAction("Index");
          }
+
+         // será que os dados que recebi,
+         // são correspondentes ao objeto que enviei para o browser?
+         var categoriaID = HttpContext.Session.GetInt32("CategoriaID");
+         // demorei muito tempo => timeout
+         if (categoriaID == null) {
+            ModelState.AddModelError("", "Demorou muito tempo. Já não consegue alterar a 'categoria'. " +
+               "Tem de reiniciar o processo.");
+           
+            return View(categoriaAlterada);
+         }
+
+         // Houve adulteração dos dados
+         if (categoriaID != categoriaAlterada.Id) {
+            // O utilizador está a tentar alterar outro objeto
+            // diferente do q recebeu
+            return RedirectToAction("Index");
+         }
+
+
 
          if (ModelState.IsValid) {
             try {
+               // guardar os dados alterados
                _bd.Update(categoriaAlterada);
+
                await _bd.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException) {
