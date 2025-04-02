@@ -12,10 +12,21 @@ using System.Globalization;
 namespace AppFotos.Controllers {
    public class FotografiasController: Controller {
 
+      /// <summary>
+      /// referência à Base de Dados
+      /// </summary>
       private readonly ApplicationDbContext _context;
 
-      public FotografiasController(ApplicationDbContext context) {
+      /// <summary>
+      /// objeto que contém todas as características do Servidor
+      /// </summary>
+      private readonly IWebHostEnvironment _webHostEnvironment;
+
+      public FotografiasController(
+         ApplicationDbContext context,
+         IWebHostEnvironment webHostEnvironment) {
          _context = context;
+         _webHostEnvironment = webHostEnvironment;
       }
 
       // GET: Fotografias
@@ -86,6 +97,7 @@ namespace AppFotos.Controllers {
       public async Task<IActionResult> Create([Bind("Titulo,Descricao,Ficheiro,Data,PrecoAux,CategoriaFK,DonoFK")] Fotografias fotografia, IFormFile imagemFoto) {
          // vars. auxiliar
          bool haErro = false;
+         string nomeImagem = "";
 
          // Avaliar se há Categoria
          if (fotografia.CategoriaFK <= 0) {
@@ -115,30 +127,68 @@ namespace AppFotos.Controllers {
           *         - guardar o ficheiro no disco rígido do servidor
           */
          if (imagemFoto == null) {
-            // não há imagem
+            // não há ficheiro
             haErro = true;
             // construo a msg de erro
             ModelState.AddModelError("", "Tem de submeter uma Fotografia");
          }
          else {
             // há ficheiro. Mas, é uma imagem?
+            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types
+            if (imagemFoto.ContentType != "image/jpeg" && imagemFoto.ContentType != "image/png") {
+               // !(A==b || A==c) <=> (A!=b && A!=c)
+               
+               // não há imagem
+               haErro = true;
+               // construo a msg de erro
+               ModelState.AddModelError("", "Tem de submeter uma Fotografia");
+            }
+            else {
+               // há imagem,
+               // vamos processá-la
+               // *******************************
+               // Novo nome para o ficheiro
+               Guid g = Guid.NewGuid();
+               nomeImagem = g.ToString();
+               string extensao = Path.GetExtension(imagemFoto.FileName).ToLowerInvariant();
+               nomeImagem += extensao;
 
+               // guardar este nome na BD
+               fotografia.Ficheiro = nomeImagem;
+            }
          }
-
-
 
          // Avalia se os dados estão de acordo com o Model
          if (ModelState.IsValid && !haErro) {
+
             // transferir o valor do PrecoAux para o Preco
             // há necessidade de tratar a questão do . no meio da string
             // há necessidade de garantir que a conversão é feita segundo uma 'cultura' pre-definida
             fotografia.Preco = Convert.ToDecimal(fotografia.PrecoAux.Replace('.', ','),
                                                  new CultureInfo("pt-PT"));
 
-
             // adicionar os dados da nova fotografia na BD
             _context.Add(fotografia);
             await _context.SaveChangesAsync();
+
+            // **********************************************
+            // guardar o ficheiro no disco rígido
+            // **********************************************
+            // determinar o local de armazenagem da imagem
+            string localizacaoImagem = _webHostEnvironment.WebRootPath;
+            localizacaoImagem = Path.Combine(localizacaoImagem, "imagens");
+            if (!Directory.Exists(localizacaoImagem)) {
+               Directory.CreateDirectory(localizacaoImagem);
+            }
+            // gerar o caminho completo para a imagem
+            nomeImagem = Path.Combine(localizacaoImagem, nomeImagem);
+            // agora, temos condições para guardar a imagem
+            using var stream = new FileStream(
+               nomeImagem, FileMode.Create
+               );
+            await imagemFoto.CopyToAsync(stream);
+            // **********************************************
+
             return RedirectToAction(nameof(Index));
          }
 
