@@ -1,64 +1,71 @@
 ﻿@model AppFotos.Models.Fotografias
 
 @{
-    ViewData["Title"] = "Edit";
+   ViewData["Title"] = "Editar";
 }
 
-<h1>Edit</h1>
+<h1>Editar Fotografias</h1>
 
-<h4>Fotografias</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Titulo" class="control-label"></label>
-                <input asp-for="Titulo" class="form-control" />
-                <span asp-validation-for="Titulo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Descricao" class="control-label"></label>
-                <input asp-for="Descricao" class="form-control" />
-                <span asp-validation-for="Descricao" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Ficheiro" class="control-label"></label>
-                <input asp-for="Ficheiro" class="form-control" />
-                <span asp-validation-for="Ficheiro" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Data" class="control-label"></label>
-                <input asp-for="Data" class="form-control" />
-                <span asp-validation-for="Data" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Preco" class="control-label"></label>
-                <input asp-for="Preco" class="form-control" />
-                <span asp-validation-for="Preco" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoriaFK" class="control-label"></label>
-                <select asp-for="CategoriaFK" class="form-control" asp-items="ViewBag.CategoriaFK"></select>
-                <span asp-validation-for="CategoriaFK" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DonoFK" class="control-label"></label>
-                <select asp-for="DonoFK" class="form-control" asp-items="ViewBag.DonoFK"></select>
-                <span asp-validation-for="DonoFK" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
+   <div class="col-md-4">
+      <form asp-action="Edit" method="post" enctype="multipart/form-data">
+
+         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+         @* guarda a referência ao ID da fotografia *@
+         <input type="hidden" asp-for="Id" />
+         <input type="hidden" asp-for="Ficheiro" />
+
+         <div class="form-group">
+            <label asp-for="Titulo" class="control-label"></label>
+            <input asp-for="Titulo" class="form-control" />
+            <span asp-validation-for="Titulo" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+            <label asp-for="Descricao" class="control-label"></label>
+            <textarea asp-for="Descricao" class="form-control"></textarea>
+            <span asp-validation-for="Descricao" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+            <label asp-for="Ficheiro" class="control-label"></label>
+            <input type="file"
+                   name="imagemFoto"
+                   class="form-control" />
+            <span asp-validation-for="Ficheiro" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+            <label asp-for="Data" class="control-label"></label>
+            <input asp-for="Data" class="form-control" />
+            <span asp-validation-for="Data" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+            <label asp-for="Preco" class="control-label"></label>
+            <input asp-for="Preco" class="form-control" />
+            <span asp-validation-for="Preco" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+            <label asp-for="CategoriaFK" class="control-label"></label>
+            <select asp-for="CategoriaFK" class="form-control" asp-items="ViewBag.CategoriaFK"></select>
+            <span asp-validation-for="CategoriaFK" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+            <label asp-for="DonoFK" class="control-label"></label>
+            <select asp-for="DonoFK" class="form-control" asp-items="ViewBag.DonoFK"></select>
+            <span asp-validation-for="DonoFK" class="text-danger"></span>
+         </div>
+         <div class="form-group">
+            <input type="submit" value="Save" class="btn btn-primary" />
+         </div>
+      </form>
+   </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+   <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+   @{
+      await Html.RenderPartialAsync("_ValidationScriptsPartial");
+   }
 }
