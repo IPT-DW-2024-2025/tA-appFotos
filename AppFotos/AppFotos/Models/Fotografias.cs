@@ -36,12 +36,33 @@ namespace AppFotos.Models {
       /// <summary>
       /// Data em que a fotografia foi tirada
       /// </summary>
+      [Display(Name = "Data")]
+      [DataType(DataType.Date)] // transforma o atributo, na BD, em 'Date'
+      [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}",
+                     ApplyFormatInEditMode = true)]
+      [Required(ErrorMessage = "A {0} é de preenchimento obrigatório")]
       public DateTime Data { get; set; }
 
       /// <summary>
       /// Preço de venda da fotografia
       /// </summary>
+      [Display(Name ="Preço")]
       public decimal Preco { get; set; }
+
+      /// <summary>
+      /// atributo auxiliar para recolher o valor do Preço da fotografia 
+      /// será usado no 'Create' e no 'Edit'
+      /// </summary>
+      [NotMapped] // este atributo não será replicado na BD
+      [Display(Name ="Preço")]
+      [Required(ErrorMessage ="O {0} é de preenchimento obrigatório")]
+      [StringLength(10)]
+      [RegularExpression("[0-9]{1,7}([,.][0-9]{1,2})?",
+                         ErrorMessage ="Só são aceites algarismos. Pode escrever duas casas decimais, separadas por . ou ,")]
+      public string PrecoAux { get; set; }
+
+
+
 
 
       /* *************************

@@ -1,0 +1,86 @@
+﻿@model AppFotos.Models.Fotografias
+
+@{
+    ViewData["Title"] = "Adicionar Foto";
+}
+
+<h1>Adicionar Fotografia</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        @* para 'levar' ficheiros do browser para o servidor é necessário
+           informar o <form> disso, através do parâmetro enctype="multipart/form-data"
+        *@
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Titulo" class="control-label"></label>
+                <input asp-for="Titulo" class="form-control" />
+                <span asp-validation-for="Titulo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Descricao" class="control-label"></label>
+            @*    <input asp-for="Descricao" class="form-control" />  *@
+            <textarea asp-for="Descricao" class="form-control"></textarea>
+                <span asp-validation-for="Descricao" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Ficheiro" class="control-label"></label>
+                @* <input asp-for="Ficheiro" class="form-control" /> *@
+                <input type="file" 
+                       accept=".png,.jpeg,.jpg"
+                       name="imagemFoto"
+                       class="form-control"
+                    />
+                <span asp-validation-for="Ficheiro" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Data" class="control-label"></label>
+                <input asp-for="Data" class="form-control" />
+                <span asp-validation-for="Data" class="text-danger"></span>
+            </div>
+            @* para processar o Preço, vamos usar o novo atributo: PrecoAux *@
+            <div class="form-group">
+                <label asp-for="PrecoAux" class="control-label"></label>
+                <input asp-for="PrecoAux" class="form-control" />
+                <span asp-validation-for="PrecoAux" class="text-danger"></span>
+            </div>
+            @* estes SELECT são as 'dropdowns' da escolha da Categoria e Utilizador *@
+            <div class="form-group">
+                <label asp-for="CategoriaFK" class="control-label"></label>
+                <select asp-for="CategoriaFK" 
+                        class ="form-control" 
+                        asp-items="ViewBag.CategoriaFK">
+                    <option value="0">Escolha uma categoria, por favor</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DonoFK" class="control-label"></label>
+                <select asp-for="DonoFK" 
+                        class ="form-control" 
+                        asp-items="ViewBag.DonoFK">
+                    <option value="0">Escolha um utilizador, por favor</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+
+    <div class="col-md-4">
+        <p>colocar aqui outro conteúdo<br />
+        a imagem que se fez <i>upload</i>, por exemplo</p> 
+    </div>
+
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
