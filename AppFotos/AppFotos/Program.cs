@@ -16,12 +16,20 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 
 
-
-
-
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+
+// configurar o de uso de 'cookies'
+builder.Services.AddSession(options => {
+   options.IdleTimeout = TimeSpan.FromSeconds(60);
+   options.Cookie.HttpOnly = true;
+   options.Cookie.IsEssential = true;
+} );
+builder.Services.AddDistributedMemoryCache();
+
+
 
 var app = builder.Build();
 
@@ -41,6 +49,10 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+// começar a usar, realmente, os 'cookies'
+app.UseSession();
+
 
 app.MapControllerRoute(
     name: "default",
