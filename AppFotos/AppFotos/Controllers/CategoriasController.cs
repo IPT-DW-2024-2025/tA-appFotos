@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AppFotos.Data;
 using AppFotos.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AppFotos.Controllers {
    public class CategoriasController: Controller {
@@ -89,6 +90,7 @@ namespace AppFotos.Controllers {
 
          // guardar os dados do objeto que vai ser enviado para o browser do utilizador
          HttpContext.Session.SetInt32("CategoriaID", categoria.Id);
+         HttpContext.Session.SetString("Acao", "Categorias/Edit");
 
          // mostro a View
          return View(categoria);
@@ -109,16 +111,17 @@ namespace AppFotos.Controllers {
          // será que os dados que recebi,
          // são correspondentes ao objeto que enviei para o browser?
          var categoriaID = HttpContext.Session.GetInt32("CategoriaID");
+         var acao = HttpContext.Session.GetString("Acao");
          // demorei muito tempo => timeout
-         if (categoriaID == null) {
+         if (categoriaID == null || acao.IsNullOrEmpty()) {
             ModelState.AddModelError("", "Demorou muito tempo. Já não consegue alterar a 'categoria'. " +
                "Tem de reiniciar o processo.");
-           
+
             return View(categoriaAlterada);
          }
 
          // Houve adulteração dos dados
-         if (categoriaID != categoriaAlterada.Id) {
+         if (categoriaID != categoriaAlterada.Id || acao != "Categorias/Edit") {
             // O utilizador está a tentar alterar outro objeto
             // diferente do q recebeu
             return RedirectToAction("Index");
@@ -152,25 +155,50 @@ namespace AppFotos.Controllers {
             return NotFound();
          }
 
-         var categorias = await _bd.Categorias
+         var categoria = await _bd.Categorias
              .FirstOrDefaultAsync(m => m.Id == id);
-         if (categorias == null) {
+         if (categoria == null) {
             return NotFound();
          }
 
-         return View(categorias);
+         // guardar os dados do objeto que vai ser enviado para o browser do utilizador
+         HttpContext.Session.SetInt32("CategoriaID", categoria.Id);
+         HttpContext.Session.SetString("Acao", "Categorias/Delete");
+
+         return View(categoria);
       }
 
       // POST: Categorias/Delete/5
       [HttpPost, ActionName("Delete")]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> DeleteConfirmed(int id) {
-         var categorias = await _bd.Categorias.FindAsync(id);
-         if (categorias != null) {
-            _bd.Categorias.Remove(categorias);
+         var categoria = await _bd.Categorias.FindAsync(id);
+
+         // será que os dados que recebi,
+         // são correspondentes ao objeto que enviei para o browser?
+         var categoriaID = HttpContext.Session.GetInt32("CategoriaID");
+         var acao = HttpContext.Session.GetString("Acao");
+         // demorei muito tempo => timeout
+         if (categoriaID == null || acao.IsNullOrEmpty()) {
+            ModelState.AddModelError("", "Demorou muito tempo. Já não consegue alterar a 'categoria'. " +
+               "Tem de reiniciar o processo.");
+
+            return View(categoria);
          }
 
+         // Houve adulteração dos dados
+         if (categoriaID != categoria.Id || acao != "Categorias/Delete") {
+            // O utilizador está a tentar alterar outro objeto
+            // diferente do q recebeu
+            return RedirectToAction("Index");
+         }
+
+
+         if (categoria != null) {
+            _bd.Categorias.Remove(categoria);
+         }
          await _bd.SaveChangesAsync();
+
          return RedirectToAction(nameof(Index));
       }
 
