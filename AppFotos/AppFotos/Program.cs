@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ler do ficheiro 'appsettings.json' os dados da BD
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-// define o tipo de BD e a sua 'ligação'
+// define o tipo de BD e a sua 'ligaï¿½ï¿½o'
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -50,7 +50,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// começar a usar, realmente, os 'cookies'
+// comeï¿½ar a usar, realmente, os 'cookies'
 app.UseSession();
 
 
