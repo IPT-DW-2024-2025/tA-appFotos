@@ -55,7 +55,7 @@ namespace AppFotos.Models {
       [StringLength(9)]
       [RegularExpression("[1-9][0-9]{8}", ErrorMessage = "Deve escrever apenas 9 digitos no {0}")]
       [Required(ErrorMessage = "O {0} é de preenchimento obrigatório")]
-      public string NIF { get; set; }= string.Empty;
+      public string NIF { get; set; } = string.Empty;
 
       /// <summary>
       /// número de telemóvel do utilizador
@@ -67,6 +67,16 @@ namespace AppFotos.Models {
       /*  9[1236][0-9]{7}  --> nºs telemóvel nacional
        *  (([+]|00)[0-9]{1,5})?[1-9][0-9]{5,10}  -->  nºs telefone internacionais
        */
+
+
+
+      /// <summary>
+      /// Este atributo servirá para fazer a 'ponte' 
+      /// entre a tabela dos Utilizadores e a 
+      /// tabela da Autenticação da Microsoft Identity
+      /// </summary>
+      [StringLength(50)]
+      public string UserName { get; set; } = string.Empty;
 
 
       /* *************************
