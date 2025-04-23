@@ -158,6 +158,9 @@ namespace AppFotos.Controllers {
             }
          }
 
+         // desligar a validação do atributo Ficheiro
+         ModelState.Remove("Ficheiro");
+
          // Avalia se os dados estão de acordo com o Model
          if (ModelState.IsValid && !haErro) {
 
