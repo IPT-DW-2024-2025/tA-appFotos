@@ -11,6 +11,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AppFotos.Data;
 using AppFotos.Models;
 
 using Microsoft.AspNetCore.Authentication;
@@ -32,19 +33,23 @@ namespace AppFotos.Areas.Identity.Pages.Account {
       private readonly IUserEmailStore<IdentityUser> _emailStore;
       private readonly ILogger<RegisterModel> _logger;
       private readonly IEmailSender _emailSender;
+      private readonly ApplicationDbContext _context;
 
       public RegisterModel(
           UserManager<IdentityUser> userManager,
           IUserStore<IdentityUser> userStore,
           SignInManager<IdentityUser> signInManager,
           ILogger<RegisterModel> logger,
-          IEmailSender emailSender) {
+          IEmailSender emailSender,
+          ApplicationDbContext context
+          ) {
          _userManager = userManager;
          _userStore = userStore;
          _emailStore = GetEmailStore();
          _signInManager = signInManager;
          _logger = logger;
          _emailSender = emailSender;
+         _context = context;
       }
 
       /// <summary>
@@ -106,46 +111,112 @@ namespace AppFotos.Areas.Identity.Pages.Account {
       }
 
 
+      /// <summary>
+      /// Este método 'responde' aos pedidos feitos em HTTP GET
+      /// </summary>
+      /// <param name="returnUrl"></param>
+      /// <returns></returns>
       public async Task OnGetAsync(string returnUrl = null) {
          ReturnUrl = returnUrl;
          ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
       }
 
+
+      /// <summary>
+      /// Este método 'responde' aos pedidos do browser, quando feitos em HTTP POST
+      /// </summary>
+      /// <param name="returnUrl"></param>
+      /// <returns></returns>
       public async Task<IActionResult> OnPostAsync(string returnUrl = null) {
+         // se o 'returnUrl' for nulo, é-lhe atribuído o valor da 'raiz' da aplicação
          returnUrl ??= Url.Content("~/");
-         ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+         // // Se estiverem definidos métodos alternativos de REGISTO e LOGIN, ativam essa opção
+         // ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+         // O ModelState avalia o estado do objeto da classe interna 'InputModel'
          if (ModelState.IsValid) {
+
             var user = CreateUser();
 
+            // atribuir ao objeto 'user' o email e o username
             await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
             await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
+            // guardar os dados do 'user' na BD, juntando-lhe a password
             var result = await _userManager.CreateAsync(user, Input.Password);
 
             if (result.Succeeded) {
-               _logger.LogInformation("User created a new account with password.");
+               // se chegar aqui, consegui escrever os dados do novo utilizador na
+               // tabela AspNetUsers
 
-               var userId = await _userManager.GetUserIdAsync(user);
-               var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-               code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-               var callbackUrl = Url.Page(
-                   "/Account/ConfirmEmail",
-                   pageHandler: null,
-                   values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                   protocol: Request.Scheme);
+               /* ++++++++++++++++++++++++++++++++++++ */
+               // guardar os dados do Utilizador na BD
+               /* ++++++++++++++++++++++++++++++++++++ */
 
-               await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                   $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+               // var auxiliar
+               bool haErro = false;
 
-               if (_userManager.Options.SignIn.RequireConfirmedAccount) {
-                  return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+               // atribuir o UserName do utilizador AspNetUser criado 
+               // ao objeto Utilizador
+               Input.Utilizador.UserName = Input.Email;
+
+               try {
+                  _context.Add(Input.Utilizador);
+                  await _context.SaveChangesAsync();
                }
-               else {
-                  await _signInManager.SignInAsync(user, isPersistent: false);
-                  return LocalRedirect(returnUrl);
+               catch (Exception) {
+                  /// NÃO ESQUECER!!!!
+                  /// HÁ NECESSIDADE DE TRATAR ESTE ERRO!!!!
+                  /// Se chegam aqui é pq não conseguiram guardar os dados
+                  /// o que fazer?
+                  ///    - apagar o user AspNetUser já criado
+                  ///    - escrever um 'log' no disco rígido do Servidor
+                  ///    - escrever o erro numa tabela da BD (o que pode 
+                  ///         não ser possível, dependendo da exceção gerada pela BD)
+                  ///    - enviar email para o Adminstrador da aplicação a relatar este facto 
+                  ///    - notificar app que há erro
+                  ///    - executar outras ações consideradas necessárias
+                  ///          (eventualmente, eliminar a instrução 'throw'
+                  haErro = true;
+                  throw;
                }
-            }
-            foreach (var error in result.Errors) {
-               ModelState.AddModelError(string.Empty, error.Description);
+               /* ++++++++++++++++++++++++++++++++++++ */
+
+               if (!haErro) {
+                  // Obter o ID do novo utilizador
+                  var userId = await _userManager.GetUserIdAsync(user);
+                  // obter o Código a ser enviado para o email do novo utilizador
+                  // para validar o email, e codificá-lo em UTF8
+                  var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                  code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                  // cria o link a ser enviado para o email, que há-de possibilitar a
+                  // validação do email
+                  var callbackUrl = Url.Page(
+                      "/Account/ConfirmEmail",
+                      pageHandler: null,
+                      values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                      protocol: Request.Scheme);
+
+                  // criar o email e enviá-lo
+                  await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                      $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                  // Se tiver sido definido que o Registo deve ser seguido de validação do
+                  // email, redireciona para a página de Confirmação de Registo de um novo Utilizador
+                  // este parâmetro está escrito no ficheiro 'Program.cs'
+                  if (_userManager.Options.SignIn.RequireConfirmedAccount) {
+                     return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                  }
+                  else {
+                     await _signInManager.SignInAsync(user, isPersistent: false);
+                     return LocalRedirect(returnUrl);
+                  }
+               }
+               // se há erros, mostra-os na página de Registo
+               foreach (var error in result.Errors) {
+                  ModelState.AddModelError(string.Empty, error.Description);
+               }
             }
          }
 
@@ -153,6 +224,11 @@ namespace AppFotos.Areas.Identity.Pages.Account {
          return Page();
       }
 
+      /// <summary>
+      /// Cria um objeto vazio do tipo IdentityUser
+      /// </summary>
+      /// <returns></returns>
+      /// <exception cref="InvalidOperationException"></exception>
       private IdentityUser CreateUser() {
          try {
             return Activator.CreateInstance<IdentityUser>();
