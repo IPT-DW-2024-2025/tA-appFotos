@@ -19,7 +19,7 @@ namespace AppFotos.Models {
       [Required(ErrorMessage = "A {0} é de preenchimento obrigatório")]
       [StringLength(20)]
       [Display(Name = "Categoria")]
-      public string Categoria { get; set; }
+      public string Categoria { get; set; } = ""; // <=> string.Empty;
 
       /* *************************
       * Definção dos relacionamentos
@@ -29,7 +29,7 @@ namespace AppFotos.Models {
       /// <summary>
       /// Lista das fotografias associadas a uma categoria
       /// </summary>
-      public ICollection<Fotografias> ListaFotografias { get; set; }
+      public ICollection<Fotografias> ListaFotografias { get; set; } = [];  // <=> new HashSet<Fotografias>();  
 
    }
 }

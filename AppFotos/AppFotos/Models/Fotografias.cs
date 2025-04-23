@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Operations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 using System.ComponentModel.DataAnnotations;
@@ -20,18 +21,18 @@ namespace AppFotos.Models {
       /// <summary>
       /// Título da fotografia
       /// </summary>
-      public string Titulo { get; set; }
+      public string Titulo { get; set; } = "";
 
       /// <summary>
       /// Descrição da fotografia
       /// </summary>
-      public string Descricao { get; set; }
+      public string? Descricao { get; set; }
 
       /// <summary>
       /// Nome do ficheiro da fotografia no disco rígido
       /// do servidor
       /// </summary>
-      public string Ficheiro { get; set; }
+      public string Ficheiro { get; set; } = null!;
 
       /// <summary>
       /// Data em que a fotografia foi tirada
@@ -46,7 +47,7 @@ namespace AppFotos.Models {
       /// <summary>
       /// Preço de venda da fotografia
       /// </summary>
-      [Display(Name ="Preço")]
+      [Display(Name = "Preço")]
       public decimal Preco { get; set; }
 
       /// <summary>
@@ -54,12 +55,12 @@ namespace AppFotos.Models {
       /// será usado no 'Create' e no 'Edit'
       /// </summary>
       [NotMapped] // este atributo não será replicado na BD
-      [Display(Name ="Preço")]
-      [Required(ErrorMessage ="O {0} é de preenchimento obrigatório")]
+      [Display(Name = "Preço")]
+      [Required(ErrorMessage = "O {0} é de preenchimento obrigatório")]
       [StringLength(10)]
       [RegularExpression("[0-9]{1,7}([,.][0-9]{1,2})?",
-                         ErrorMessage ="Só são aceites algarismos. Pode escrever duas casas decimais, separadas por . ou ,")]
-      public string PrecoAux { get; set; }
+                         ErrorMessage = "Só são aceites algarismos. Pode escrever duas casas decimais, separadas por . ou ,")]
+      public string PrecoAux { get; set; } = string.Empty;
 
 
 
@@ -82,7 +83,8 @@ namespace AppFotos.Models {
       /// <summary>
       /// FK para as Categorias
       /// </summary>
-      public Categorias Categoria { get; set; }
+      [ValidateNever]
+      public Categorias Categoria { get; set; } = null!;
 
       /// <summary>
       /// FK para referenciar o Dono da fotografia
@@ -92,7 +94,8 @@ namespace AppFotos.Models {
       /// <summary>
       /// FK para referenciar o Dono da fotografia
       /// </summary>
-      public Utilizadores Dono { get; set; }
+      [ValidateNever]
+      public Utilizadores Dono { get; set; } = null!;
 
 
       // M-N
@@ -100,12 +103,12 @@ namespace AppFotos.Models {
       /// <summary>
       /// Lista de 'gostos' de uma fotografia
       /// </summary>
-      public ICollection<Gostos> ListaGostos { get; set; }
+      public ICollection<Gostos> ListaGostos { get; set; } = [];
 
       /// <summary>
       /// Lista de 'compras' que compraram a fotografia
       /// </summary>
-      public ICollection<Compras> ListaCompras { get; set; }
+      public ICollection<Compras> ListaCompras { get; set; } = [];
 
 
    }

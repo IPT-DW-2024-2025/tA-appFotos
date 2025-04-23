@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.EntityFrameworkCore;
 
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -33,7 +34,8 @@ namespace AppFotos.Models {
       /// <summary>
       ///  FK para referenciar o utilizador que gosta da fotografia
       /// </summary>
-      public Utilizadores Utilizador { get; set; }
+      [ValidateNever]
+      public Utilizadores Utilizador { get; set; } = null!;
 
       /// <summary>
       /// FK para a fotografia que o utilizador gostou
@@ -43,7 +45,8 @@ namespace AppFotos.Models {
       /// <summary>
       /// FK para a fotografia que o utilizador gostou
       /// </summary>
-      public Fotografias Fotografia { get; set; }
+      [ValidateNever]
+      public Fotografias Fotografia { get; set; } = null!;
 
    }
 }

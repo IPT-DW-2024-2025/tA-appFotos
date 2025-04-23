@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AppFotos.Models {
@@ -44,12 +46,13 @@ namespace AppFotos.Models {
       /// <summary>
       /// FK para referenciar o Comprador da fotografia
       /// </summary>
-      public Utilizadores Comprador { get; set; }
+      [ValidateNever]
+      public Utilizadores Comprador { get; set; } = null!;
 
       /// <summary>
       /// Lista das fotografias compradas pelo utilizador
       /// </summary>
-        public ICollection<Fotografias> ListaFotografiasCompradas { get; set; }
+      public ICollection<Fotografias> ListaFotografiasCompradas { get; set; } = [];
     }
 
 
