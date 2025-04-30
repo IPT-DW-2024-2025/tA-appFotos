@@ -15,9 +15,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 
-
+// configurar o uso do IdentityUser como 'utilizador' de autenticação
+// se não se adicionar à instrução '.AddRoles' não é possível usar os ROLES
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+   .AddRoles<IdentityRole>()
+   .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
 

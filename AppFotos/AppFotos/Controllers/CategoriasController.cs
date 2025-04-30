@@ -8,8 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using AppFotos.Data;
 using AppFotos.Models;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AppFotos.Controllers {
+
+
+   [Authorize(Roles ="admin")]
    public class CategoriasController: Controller {
 
       /// <summary>
@@ -22,6 +26,7 @@ namespace AppFotos.Controllers {
       }
 
       // GET: Categorias
+      [AllowAnonymous]
       public async Task<IActionResult> Index() {
          return View(await _bd.Categorias.ToListAsync());
       }
