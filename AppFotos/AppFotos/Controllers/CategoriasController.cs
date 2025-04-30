@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace AppFotos.Controllers {
 
 
-   [Authorize(Roles ="admin")]
+   [Authorize(Roles = "admin")]
    public class CategoriasController: Controller {
 
       /// <summary>
@@ -28,7 +28,7 @@ namespace AppFotos.Controllers {
       // GET: Categorias
       [AllowAnonymous]
       public async Task<IActionResult> Index() {
-         return View(await _bd.Categorias.ToListAsync());
+         return View(await _bd.Categorias.Include(c => c.ListaFotografias).ToListAsync());
       }
 
       // GET: Categorias/Details/5
@@ -161,7 +161,8 @@ namespace AppFotos.Controllers {
          }
 
          var categoria = await _bd.Categorias
-             .FirstOrDefaultAsync(m => m.Id == id);
+                                  .Include(c => c.ListaFotografias)
+                                  .FirstOrDefaultAsync(m => m.Id == id);
          if (categoria == null) {
             return NotFound();
          }
@@ -177,7 +178,10 @@ namespace AppFotos.Controllers {
       [HttpPost, ActionName("Delete")]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> DeleteConfirmed(int id) {
-         var categoria = await _bd.Categorias.FindAsync(id);
+         var categoria = await _bd.Categorias
+                                  .Include(c => c.ListaFotografias)
+                                  .Where(c => c.Id == id)
+                                  .FirstOrDefaultAsync();
 
          // será que os dados que recebi,
          // são correspondentes ao objeto que enviei para o browser?
@@ -199,7 +203,9 @@ namespace AppFotos.Controllers {
          }
 
 
-         if (categoria != null) {
+         if (categoria != null && categoria.ListaFotografias.Count == 0) {
+            // a Categoria só é apagada se existir :-)
+            // e se não tiver fotografias associadas a ela
             _bd.Categorias.Remove(categoria);
          }
          await _bd.SaveChangesAsync();

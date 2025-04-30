@@ -85,7 +85,7 @@ namespace AppFotos.Data.Migrations
                         column: x => x.CategoriaFK,
                         principalTable: "Categorias",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Fotografias_Utilizadores_DonoFK",
                         column: x => x.DonoFK,
