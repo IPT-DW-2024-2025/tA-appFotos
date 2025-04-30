@@ -240,15 +240,22 @@ namespace AppFotos.Controllers {
       // GET: Fotografias/Edit/5
       public async Task<IActionResult> Edit(int? id) {
          if (id == null) {
-            return NotFound();
+            //  return NotFound();
+            return RedirectToAction("Index");
          }
+         // o 'id' corresponde ao ID da Fotografia que quero editar.
+         // Mas, tenho autorização para a editar?
+         var fotografia = await _context.Fotografias
+                                        .Where(f => f.Dono.UserName == User.Identity.Name &&
+                                                                       f.Id == id)
+                                        .FirstOrDefaultAsync();
 
-         var fotografia = await _context.Fotografias.FindAsync(id);
          if (fotografia == null) {
-            return NotFound();
+            // return NotFound();
+            return RedirectToAction("Index");
          }
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
+         //     ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
          return View(fotografia);
       }
 
@@ -269,7 +276,9 @@ namespace AppFotos.Controllers {
          // SE o utilizador não quiser alterar a imagem,
          // NÃO PODE ser apagada da BD
 
-
+         // NÃO ESQUECER!
+         // Temos de fazer a mesma ação feita no CREATE sobre
+         // a associação do DONO
 
 
 
@@ -289,22 +298,26 @@ namespace AppFotos.Controllers {
             return RedirectToAction(nameof(Index));
          }
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias, "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores, "Id", "Id", fotografia.DonoFK);
+         //    ViewData["DonoFK"] = new SelectList(_context.Utilizadores, "Id", "Id", fotografia.DonoFK);
          return View(fotografia);
       }
 
       // GET: Fotografias/Delete/5
       public async Task<IActionResult> Delete(int? id) {
          if (id == null) {
-            return NotFound();
+            //  return NotFound();
+            return RedirectToAction("Index");
          }
 
          var fotografia = await _context.Fotografias
              .Include(f => f.Categoria)
              .Include(f => f.Dono)
-             .FirstOrDefaultAsync(m => m.Id == id);
+             .Where(f => f.Dono.UserName == User.Identity.Name &&
+                                            f.Id == id)
+             .FirstOrDefaultAsync();
          if (fotografia == null) {
-            return NotFound();
+            //    return NotFound();
+            return RedirectToAction("Index");
          }
 
          return View(fotografia);
@@ -314,7 +327,11 @@ namespace AppFotos.Controllers {
       [HttpPost, ActionName("Delete")]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> DeleteConfirmed(int id) {
-         var fotografia = await _context.Fotografias.FindAsync(id);
+         // var fotografia = await _context.Fotografias.FindAsync(id);
+         var fotografia = await _context.Fotografias
+                                        .Where(f => f.Dono.UserName == User.Identity.Name &&
+                                             f.Id == id)
+                                        .FirstOrDefaultAsync();
          if (fotografia != null) {
             // remover a imagem da BD
             _context.Fotografias.Remove(fotografia);
