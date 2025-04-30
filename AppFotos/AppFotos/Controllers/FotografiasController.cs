@@ -8,8 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using AppFotos.Data;
 using AppFotos.Models;
 using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AppFotos.Controllers {
+
+   [Authorize]
    public class FotografiasController: Controller {
 
       /// <summary>
@@ -30,6 +33,7 @@ namespace AppFotos.Controllers {
       }
 
       // GET: Fotografias
+      [AllowAnonymous] // esta anotação anula o [Authorize]
       public async Task<IActionResult> Index() {
 
          /* interrogação à BD feita em LINQ <=> SQL
@@ -77,11 +81,17 @@ namespace AppFotos.Controllers {
          // FROM Categorias c
          // ORDER BY c.Categoria
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria");
-         // SELECT *
-         // FROM Utilizadores u
-         // ORDER BY u.Nome
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome");
 
+         /*
+          * esta opção vai ser removida porque já não é necessária
+          * Dados do Utilizador vão ser lidos da BD
+          * 
+               // SELECT *
+               // FROM Utilizadores u
+               // ORDER BY u.Nome
+               ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome");
+          *
+          */
 
          return View();
       }
@@ -107,13 +117,13 @@ namespace AppFotos.Controllers {
             ModelState.AddModelError("", "Tem de escolher uma Categoria");
          }
 
-         // Avaliar se há Utilizador
-         if (fotografia.DonoFK <= 0) {
-            // Erro. Não foi escolhida um dono
-            haErro = true;
-            // construo a msg de erro
-            ModelState.AddModelError("", "Tem de escolher um Dono");
-         }
+         //  // Avaliar se há Utilizador
+         //  if (fotografia.DonoFK <= 0) {
+         //     // Erro. Não foi escolhida um dono
+         //     haErro = true;
+         //     // construo a msg de erro
+         //     ModelState.AddModelError("", "Tem de escolher um Dono");
+         //  }
 
          /* Avaliar o ficheiro fornecido
           * - há ficheiro?
@@ -137,7 +147,7 @@ namespace AppFotos.Controllers {
             // https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types
             if (imagemFoto.ContentType != "image/jpeg" && imagemFoto.ContentType != "image/png") {
                // !(A==b || A==c) <=> (A!=b && A!=c)
-               
+
                // não há imagem
                haErro = true;
                // construo a msg de erro
@@ -170,6 +180,28 @@ namespace AppFotos.Controllers {
             fotografia.Preco = Convert.ToDecimal(fotografia.PrecoAux.Replace('.', ','),
                                                  new CultureInfo("pt-PT"));
 
+            // *********************************************************
+            // associar o Utilizador autenticado como DONO da Fotografia
+            // *********************************************************
+
+            // procurar os dados do DONO
+            //var username = User.Identity.Name;
+            //var dono = _context.Utilizadores
+            //                   .Where(u => u.UserName == username)
+            //                   .FirstOrDefault();
+            // Associar os dados do DONO à fotografia
+            //fotografia.Dono = dono;
+
+            // procurar os dados do DONO
+            var username = User.Identity.Name;
+            var donoId = _context.Utilizadores
+                               .Where(u => u.UserName == username)
+                               .Select(u => u.Id)
+                               .FirstOrDefault();
+            // Associar os dados do DONO à fotografia
+            fotografia.DonoFK = donoId;
+            // *********************************************************
+
             // adicionar os dados da nova fotografia na BD
             _context.Add(fotografia);
             await _context.SaveChangesAsync();
@@ -196,7 +228,7 @@ namespace AppFotos.Controllers {
          }
 
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
+         //        ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
 
          // Se chego aqui é pq algo correu mal...
          return View(fotografia);
@@ -208,15 +240,22 @@ namespace AppFotos.Controllers {
       // GET: Fotografias/Edit/5
       public async Task<IActionResult> Edit(int? id) {
          if (id == null) {
-            return NotFound();
+            //  return NotFound();
+            return RedirectToAction("Index");
          }
+         // o 'id' corresponde ao ID da Fotografia que quero editar.
+         // Mas, tenho autorização para a editar?
+         var fotografia = await _context.Fotografias
+                                        .Where(f => f.Dono.UserName == User.Identity.Name &&
+                                                                       f.Id == id)
+                                        .FirstOrDefaultAsync();
 
-         var fotografia = await _context.Fotografias.FindAsync(id);
          if (fotografia == null) {
-            return NotFound();
+            // return NotFound();
+            return RedirectToAction("Index");
          }
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
+         //     ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
          return View(fotografia);
       }
 
@@ -237,7 +276,9 @@ namespace AppFotos.Controllers {
          // SE o utilizador não quiser alterar a imagem,
          // NÃO PODE ser apagada da BD
 
-
+         // NÃO ESQUECER!
+         // Temos de fazer a mesma ação feita no CREATE sobre
+         // a associação do DONO
 
 
 
@@ -257,22 +298,26 @@ namespace AppFotos.Controllers {
             return RedirectToAction(nameof(Index));
          }
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias, "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores, "Id", "Id", fotografia.DonoFK);
+         //    ViewData["DonoFK"] = new SelectList(_context.Utilizadores, "Id", "Id", fotografia.DonoFK);
          return View(fotografia);
       }
 
       // GET: Fotografias/Delete/5
       public async Task<IActionResult> Delete(int? id) {
          if (id == null) {
-            return NotFound();
+            //  return NotFound();
+            return RedirectToAction("Index");
          }
 
          var fotografia = await _context.Fotografias
              .Include(f => f.Categoria)
              .Include(f => f.Dono)
-             .FirstOrDefaultAsync(m => m.Id == id);
+             .Where(f => f.Dono.UserName == User.Identity.Name &&
+                                            f.Id == id)
+             .FirstOrDefaultAsync();
          if (fotografia == null) {
-            return NotFound();
+            //    return NotFound();
+            return RedirectToAction("Index");
          }
 
          return View(fotografia);
@@ -282,7 +327,11 @@ namespace AppFotos.Controllers {
       [HttpPost, ActionName("Delete")]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> DeleteConfirmed(int id) {
-         var fotografia = await _context.Fotografias.FindAsync(id);
+         // var fotografia = await _context.Fotografias.FindAsync(id);
+         var fotografia = await _context.Fotografias
+                                        .Where(f => f.Dono.UserName == User.Identity.Name &&
+                                             f.Id == id)
+                                        .FirstOrDefaultAsync();
          if (fotografia != null) {
             // remover a imagem da BD
             _context.Fotografias.Remove(fotografia);

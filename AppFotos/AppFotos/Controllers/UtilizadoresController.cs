@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AppFotos.Data;
 using AppFotos.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AppFotos.Controllers {
+
+   [Authorize] // apenas pessoas autenticadas terão acesso ao conteúdo do Controller
    public class UtilizadoresController: Controller {
 
       /// <summary>
@@ -48,29 +51,7 @@ namespace AppFotos.Controllers {
          return View(utilizador);
       }
 
-      // GET: Utilizadores/Create
-      public IActionResult Create() {
-         return View();
-      }
-
-      // POST: Utilizadores/Create
-      // To protect from overposting attacks, enable the specific properties you want to bind to.
-      // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-      [HttpPost]
-      [ValidateAntiForgeryToken]
-      public async Task<IActionResult> Create([Bind("Nome,Morada,CodPostal,Pais,NIF,Telemovel")] Utilizadores utilizador) {
-
-         if (ModelState.IsValid) {
-            // Corrigir os dados do Código Postal
-            utilizador.CodPostal = utilizador.CodPostal.ToUpper();
-
-            _context.Add(utilizador);
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-         }
-         return View(utilizador);
-      }
+     
 
       // GET: Utilizadores/Edit/5
       public async Task<IActionResult> Edit(int? id) {
