@@ -8,8 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using AppFotos.Data;
 using AppFotos.Models;
 using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AppFotos.Controllers {
+
+   [Authorize]
    public class FotografiasController: Controller {
 
       /// <summary>
@@ -30,6 +33,7 @@ namespace AppFotos.Controllers {
       }
 
       // GET: Fotografias
+      [AllowAnonymous] // esta anotação anula o [Authorize]
       public async Task<IActionResult> Index() {
 
          /* interrogação à BD feita em LINQ <=> SQL
@@ -77,11 +81,17 @@ namespace AppFotos.Controllers {
          // FROM Categorias c
          // ORDER BY c.Categoria
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria");
-         // SELECT *
-         // FROM Utilizadores u
-         // ORDER BY u.Nome
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome");
 
+         /*
+          * esta opção vai ser removida porque já não é necessária
+          * Dados do Utilizador vão ser lidos da BD
+          * 
+               // SELECT *
+               // FROM Utilizadores u
+               // ORDER BY u.Nome
+               ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome");
+          *
+          */
 
          return View();
       }
@@ -107,13 +117,13 @@ namespace AppFotos.Controllers {
             ModelState.AddModelError("", "Tem de escolher uma Categoria");
          }
 
-         // Avaliar se há Utilizador
-         if (fotografia.DonoFK <= 0) {
-            // Erro. Não foi escolhida um dono
-            haErro = true;
-            // construo a msg de erro
-            ModelState.AddModelError("", "Tem de escolher um Dono");
-         }
+         //  // Avaliar se há Utilizador
+         //  if (fotografia.DonoFK <= 0) {
+         //     // Erro. Não foi escolhida um dono
+         //     haErro = true;
+         //     // construo a msg de erro
+         //     ModelState.AddModelError("", "Tem de escolher um Dono");
+         //  }
 
          /* Avaliar o ficheiro fornecido
           * - há ficheiro?
@@ -137,7 +147,7 @@ namespace AppFotos.Controllers {
             // https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types
             if (imagemFoto.ContentType != "image/jpeg" && imagemFoto.ContentType != "image/png") {
                // !(A==b || A==c) <=> (A!=b && A!=c)
-               
+
                // não há imagem
                haErro = true;
                // construo a msg de erro
@@ -170,6 +180,28 @@ namespace AppFotos.Controllers {
             fotografia.Preco = Convert.ToDecimal(fotografia.PrecoAux.Replace('.', ','),
                                                  new CultureInfo("pt-PT"));
 
+            // *********************************************************
+            // associar o Utilizador autenticado como DONO da Fotografia
+            // *********************************************************
+
+            // procurar os dados do DONO
+            //var username = User.Identity.Name;
+            //var dono = _context.Utilizadores
+            //                   .Where(u => u.UserName == username)
+            //                   .FirstOrDefault();
+            // Associar os dados do DONO à fotografia
+            //fotografia.Dono = dono;
+
+            // procurar os dados do DONO
+            var username = User.Identity.Name;
+            var donoId = _context.Utilizadores
+                               .Where(u => u.UserName == username)
+                               .Select(u => u.Id)
+                               .FirstOrDefault();
+            // Associar os dados do DONO à fotografia
+            fotografia.DonoFK = donoId;
+            // *********************************************************
+
             // adicionar os dados da nova fotografia na BD
             _context.Add(fotografia);
             await _context.SaveChangesAsync();
@@ -196,7 +228,7 @@ namespace AppFotos.Controllers {
          }
 
          ViewData["CategoriaFK"] = new SelectList(_context.Categorias.OrderBy(c => c.Categoria), "Id", "Categoria", fotografia.CategoriaFK);
-         ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
+         //        ViewData["DonoFK"] = new SelectList(_context.Utilizadores.OrderBy(u => u.Nome), "Id", "Nome", fotografia.DonoFK);
 
          // Se chego aqui é pq algo correu mal...
          return View(fotografia);
