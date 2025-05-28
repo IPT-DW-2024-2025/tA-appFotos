@@ -29,7 +29,9 @@ namespace AppFotos.Controllers.API {
       [HttpGet]
       [AllowAnonymous]
       public async Task<ActionResult<IEnumerable<Categorias>>> GetCategorias() {
-         return await _context.Categorias.ToListAsync();
+         return await _context.Categorias
+                              .Include(c=>c.ListaFotografias)
+                              .ToListAsync();
       }
 
       /// <summary>
