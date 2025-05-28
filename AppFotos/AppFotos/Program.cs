@@ -1,5 +1,6 @@
 using AppFotos.Data;
 using AppFotos.Data.Seed;
+using AppFotos.Services;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
