@@ -2,6 +2,8 @@
 
 @{
    ViewData["Title"]="Index";
+   int idUtilizador = (int)ViewBag.idUtilizador;
+   string imagem = "";
 }
 
 <h1>Index</h1>
@@ -43,10 +45,19 @@
                @* processar os Gostos da Fotografia*@
                @if (User.Identity.IsAuthenticated) {
                   <button class="form-control" onclick="UpdateLike(@fotografia.Id)">
-                     marcar gosto
+                     @if (fotografia.ListaGostos.Any(g => g.UtilizadorFK==idUtilizador)) { imagem="gostei.png"; }
+                     else { imagem="gostar.png"; }
+                     <img id=@("img"+fotografia.Id)
+                          src="~/imagensBase/@imagem" 
+                          alt="ícone do gostar/não gostar" 
+                          height="30px" />
+
                   </button>
                }
-               gostos: <span id=@("foto"+fotografia.Id)>@fotografia.ListaGostos.Count()</span>
+               <img src="~/imagensBase/gostos.png"
+                    alt="ícone de nº de gostos na Fotografia"
+                    height="30px" />
+               <span id=@("foto"+fotografia.Id)>@fotografia.ListaGostos.Count()</span>
 
 
             </td>
@@ -116,8 +127,10 @@ https://learn.microsoft.com/en-us/aspnet/core/signalr/javascript-client?view=asp
          console.log("SignalR Connected.");
 
          // ao recebermos uma resposta onde nome do método é 'UpdateLike' fazemos o update
-         connection.on("UpdateLike", (idFoto, numGostos) => {
+         connection.on("UpdateLike", (idFoto, numGostos, gostei) => {
             document.getElementById("foto" + idFoto).innerText = numGostos;
+            if (gostei) { document.getElementById("img" + idFoto).src = "/imagensBase/gostei.png"; }
+            else { document.getElementById("img" + idFoto).src = "/imagensBase/gostar.png"; }
          });
 
       } catch (err) {

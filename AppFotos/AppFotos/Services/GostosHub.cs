@@ -44,6 +44,8 @@ namespace AppFotos.Services {
       /// <param name="idFoto">id da fotografia sobre a qual se quer alterar o 'gosto'</param>
       [Authorize]
       public void UpdateLike(string idFoto) {
+         // var auxiliar
+         bool gostei=false;
 
          // obter dados do utilizador
          var username = Context.User.Identity.Name;
@@ -77,6 +79,7 @@ namespace AppFotos.Services {
                   Data=DateTime.Now
                };
                _context.Add(novoGosto);
+               gostei = true;
             }
 
             _context.SaveChanges();
@@ -89,9 +92,9 @@ namespace AppFotos.Services {
             //      normalmente dá-se o mesmo nome do método em que é enviada a resposta
             // o que devolvemos na resposta tem de ser coerente com o código JS abaixo que vai ler a resposta 
             // JS:
-            // connection.on("UpdateLike", (idFoto, numGostos) => {
+            // connection.on("UpdateLike", (idFoto, numGostos,gostei) => {
             // nomes das variáveis podem mudar, mas o nome do método e o número de variáveis tem de ser igual
-            Clients.All.SendAsync("UpdateLike",idFoto,numGostos);
+            Clients.All.SendAsync("UpdateLike",idFoto,numGostos,gostei);
          }
       }
    }
