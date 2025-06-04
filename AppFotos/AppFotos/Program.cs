@@ -5,7 +5,9 @@ using AppFotos.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -78,7 +80,18 @@ builder.Services.AddAuthentication(options => { })
 builder.Services.AddScoped<TokenService>();
 
 
+// Adiciona o Swagger
+// builder.Services.AddEndpointsApiExplorer();   // necessária apenas para APIs mínimas. 
+// builder.Services.AddSwaggerGen();
 
+builder.Services.AddSwaggerGen(c => {
+   c.SwaggerDoc("v1",new OpenApiInfo {
+      Title="Minha API de gestão de Fotos",
+      Version="v1",
+      Description="API para gestão de categorias, fotografias e utilizadores"
+   });
+
+});
 
 
 var app = builder.Build();
@@ -93,6 +106,10 @@ if (app.Environment.IsDevelopment()) {
 
    // Invocar o seed da BD
    app.UseItToSeedSqlServer();
+
+   // iniciar o 'middleware' do Swagger
+   app.UseSwagger();
+   app.UseSwaggerUI();
 
 }
 else {
