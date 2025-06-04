@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<AppFotos.Models.Fotografias>
 
 @{
-   ViewData["Title"] = "Index";
+   ViewData["Title"]="Index";
 }
 
 <h1>Index</h1>
@@ -13,10 +13,10 @@
    <thead>
       <tr>
          <th>
-            @Html.DisplayNameFor(model => model.Titulo)
+            Gostos
          </th>
          <th>
-            @Html.DisplayNameFor(model => model.Descricao)
+            @Html.DisplayNameFor(model => model.Titulo)
          </th>
          <th>
             @Html.DisplayNameFor(model => model.Ficheiro)
@@ -31,46 +31,54 @@
             @Html.DisplayNameFor(model => model.Categoria)
          </th>
          <th>
-            @Html.DisplayNameFor(model => model.Dono)
+            Fotógrafo(a)
          </th>
          <th></th>
       </tr>
    </thead>
    <tbody>
-      @foreach (var item in Model) {
+      @foreach (var fotografia in Model) {
          <tr>
             <td>
-               @Html.DisplayFor(modelItem => item.Titulo)
+               @* processar os Gostos da Fotografia*@
+               @if (User.Identity.IsAuthenticated) {
+                  <button class="form-control" onclick="UpdateLike(@fotografia.Id)">
+                     marcar gosto
+                  </button>
+               }
+               gostos: <span id=@("foto"+fotografia.Id)>@fotografia.ListaGostos.Count()</span>
+
+
             </td>
             <td>
-               @Html.DisplayFor(modelItem => item.Descricao)
+               @Html.DisplayFor(modelItem => fotografia.Titulo)
             </td>
             <td>
-               @*         @Html.DisplayFor(modelItem => item.Ficheiro)   *@
-               <img src="~/imagens/@item.Ficheiro"
-                    alt="imagem da fotografia com o título '@item.Titulo', fotografada por @item.Dono.Nome."
-                    title="@item.Titulo"
+               @*         @Html.DisplayFor(modelItem => fotografia.Ficheiro)   *@
+               <img src="~/imagens/@fotografia.Ficheiro"
+                    alt="imagem da fotografia com o título '@fotografia.Titulo', fotografada por @fotografia.Dono.Nome."
+                    title="@fotografia.Titulo"
                     height="100px" />
             </td>
             <td>
-               @Html.DisplayFor(modelItem => item.Data)
+               @Html.DisplayFor(modelItem => fotografia.Data)
             </td>
             <td>
-               @Html.DisplayFor(modelItem => item.Preco)
+               @Html.DisplayFor(modelItem => fotografia.Preco)
             </td>
             <td>
-               @Html.DisplayFor(modelItem => item.Categoria.Categoria)
+               @Html.DisplayFor(modelItem => fotografia.Categoria.Categoria)
             </td>
             <td>
-               @Html.DisplayFor(modelItem => item.Dono.Id)
+               @Html.DisplayFor(modelItem => fotografia.Dono.Nome)
             </td>
             <td>
-               @if (User.Identity.IsAuthenticated &&
-                    item.Dono.UserName == User.Identity.Name) {
+               @if (User.Identity.IsAuthenticated&&
+              fotografia.Dono.UserName==User.Identity.Name) {
                   <text>
-                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                     <a asp-action="Edit" asp-route-id="@fotografia.Id">Edit</a> |
+                     <a asp-action="Details" asp-route-id="@fotografia.Id">Details</a> |
+                     <a asp-action="Delete" asp-route-id="@fotografia.Id">Delete</a>
                   </text>
                }
             </td>
@@ -78,3 +86,58 @@
       }
    </tbody>
 </table>
+
+
+
+<!-- Código adaptado de
+https://learn.microsoft.com/en-us/aspnet/core/signalr/javascript-client?view=aspnetcore-9.0&tabs=visual-studio
+-->
+<!-- Adicionado script com cliente JS do signalR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"
+        integrity="sha512-7SRCYIJtR6F8ocwW7UxW6wGKqbSyqREDbfCORCbGLatU0iugBLwyOXpzhkPyHIFdBO0K2VCu57fvP2Twgx1o2A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+
+
+<!-- processamento das ações de 'gostar'/'não gostar' -->
+<script>
+   // constrói o objeto JS que vai interagir com o HUB
+   // NOTA: o fluxo todo de dados pode ser visualizado através do separador 'REDE'
+   const connection = new signalR.HubConnectionBuilder()
+      .withUrl("/gostoshub")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+   // função que inicializa a conexão com o HUB
+   async function start() {
+      try {
+         await connection.start();
+         console.log("SignalR Connected.");
+
+         // ao recebermos uma resposta onde nome do método é 'UpdateLike' fazemos o update
+         connection.on("UpdateLike", (idFoto, numGostos) => {
+            document.getElementById("foto" + idFoto).innerText = numGostos;
+         });
+
+      } catch (err) {
+         console.log(err);
+      }
+   };
+
+   connection.onclose(async () => {
+      // do something
+   });
+
+   function UpdateLike(idFoto) {
+      // linha abaixo é necessária porque o método que chamamos está à espera de uma string,
+      //      se lhe passarmos outro tipo de dados dá erro!
+      idFoto += '';
+
+      connection.invoke("UpdateLike", idFoto);
+   }
+
+   // Start the connection.
+   start();
+
+</script>

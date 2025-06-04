@@ -41,7 +41,10 @@ namespace AppFotos.Controllers {
           * FROM Fotografias f INNER JOIN Categorias c ON f.CategoriaFK = c.Id
           *                    INNER JOIN Utilizadores u ON f.DonoFK = u.Id
           */
-         var listaFotografias = _context.Fotografias.Include(f => f.Categoria).Include(f => f.Dono);
+         var listaFotografias = _context.Fotografias
+                                        .Include(f => f.Categoria)
+                                        .Include(f => f.Dono)
+                                        .Include(f=>f.ListaGostos);
 
          return View(await listaFotografias.ToListAsync());
       }

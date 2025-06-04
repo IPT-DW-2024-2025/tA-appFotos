@@ -87,6 +87,9 @@ builder.Services.AddControllers()
 //builder.Services.AddRazorPages(); // importante para Identity scaffolding (Login, Register, etc.)
 
 
+// declarar o serviço do Signal R
+builder.Services.AddSignalR();
+
 
 var app = builder.Build();
 
@@ -127,5 +130,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+// cria uma 'ponte' entre o nosso serviço Signal R (o GostosHub)
+// e o javascript do browser
+app.MapHub<GostosHub>("/gostoshub");
+
 
 app.Run();
