@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-AppFotos-e70e1246-ae09-4e6d-9055-a15f3ff38f47</UserSecretsId>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<NoWarn>$(NoWarn);1591</NoWarn>	   <!-- Evita warnings por falta de comentários --> 
+  
   </PropertyGroup>
 
   <ItemGroup>
