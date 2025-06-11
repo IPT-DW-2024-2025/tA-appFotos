@@ -21,6 +21,7 @@ namespace AppFotos.Controllers.API {
 
       // GET: api/Fotografias
       [HttpGet]
+
       public async Task<ActionResult<IEnumerable<FotografiasDTO>>> GetFotografias() {
          // o que tínhamos
          // // SELECT *
@@ -71,7 +72,6 @@ namespace AppFotos.Controllers.API {
          }
 
          _context.Entry(fotografia).State=EntityState.Modified;
-
          try {
             await _context.SaveChangesAsync();
          }
@@ -99,9 +99,11 @@ namespace AppFotos.Controllers.API {
 
       // DELETE: api/Fotografias/5
       [HttpDelete("{id}")]
+
       public async Task<IActionResult> DeleteFotografia(int id) {
          var fotografia = await _context.Fotografias.FindAsync(id);
          if (fotografia==null) {
+
             return NotFound();
          }
 
@@ -111,8 +113,10 @@ namespace AppFotos.Controllers.API {
          return NoContent();
       }
 
+
       private bool FotografiaExiste(int id) {
          return _context.Fotografias.Any(e => e.Id==id);
       }
    }
+   
 }

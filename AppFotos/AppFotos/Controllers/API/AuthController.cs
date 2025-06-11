@@ -19,6 +19,7 @@ namespace AppFotos.Controllers.API {
    [Route("api/[controller]")]
    [ApiController]
    public class AuthController:ControllerBase {
+
       private readonly ApplicationDbContext _context;
       private readonly UserManager<IdentityUser> _userManager;
       private readonly SignInManager<IdentityUser> _signInManager;
@@ -79,7 +80,5 @@ namespace AppFotos.Controllers.API {
 
          return new JwtSecurityTokenHandler().WriteToken(token);
       }
-
    }
-
 }

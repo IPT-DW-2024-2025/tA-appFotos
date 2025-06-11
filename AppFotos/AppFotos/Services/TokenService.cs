@@ -7,7 +7,7 @@ using System.Text;
 namespace AppFotos.Services {
 
    /// <summary>
-   /// Gerador de 'tokens' JWT
+   /// Geração de 'tokens' JWT (Java Web Token)
    /// </summary>
    public class TokenService {
 
@@ -29,6 +29,7 @@ namespace AppFotos.Services {
            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
        };
 
+
          var token = new JwtSecurityToken(
              issuer: jwtSettings["Issuer"],
              audience: jwtSettings["Audience"],
@@ -39,7 +40,6 @@ namespace AppFotos.Services {
 
          return new JwtSecurityTokenHandler().WriteToken(token);
       }
-
 
    }
 }

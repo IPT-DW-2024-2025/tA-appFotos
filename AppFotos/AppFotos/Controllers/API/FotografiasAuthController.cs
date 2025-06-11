@@ -14,6 +14,8 @@ namespace AppFotos.Controllers.API {
    [Route("api/[controller]")]
    [ApiController]
    [Authorize(AuthenticationSchemes ="Bearer")] // esta autrenticação será por JWT
+
+
    public class FotografiasAuthController:ControllerBase {
 
       private readonly ApplicationDbContext _context;
@@ -21,6 +23,7 @@ namespace AppFotos.Controllers.API {
       public FotografiasAuthController(ApplicationDbContext context) {
          _context=context;
       }
+
 
       // GET: api/Fotografias
       [HttpGet]
@@ -101,6 +104,7 @@ namespace AppFotos.Controllers.API {
          return NoContent();
       }
 
+
       // POST: api/Fotografias
       // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
       [HttpPost]
@@ -125,8 +129,11 @@ namespace AppFotos.Controllers.API {
          return NoContent();
       }
 
+
       private bool FotografiaExiste(int id) {
          return _context.Fotografias.Any(e => e.Id==id);
       }
+      
    }
+   
 }

@@ -13,6 +13,7 @@ namespace AppFotos.Controllers.API {
    [Route("api/[controller]")]
    [ApiController]
    [Authorize(Roles = "admin")]
+
    public class CategoriasAuthController:ControllerBase {
 
       private readonly ApplicationDbContext _context;
@@ -20,6 +21,7 @@ namespace AppFotos.Controllers.API {
       public CategoriasAuthController(ApplicationDbContext context) {
          _context=context;
       }
+
 
       // GET: api/Categorias
       /// <summary>
@@ -71,6 +73,7 @@ namespace AppFotos.Controllers.API {
             await _context.SaveChangesAsync();
          }
          catch (DbUpdateConcurrencyException) {
+
             if (!CategoriaExiste(id)) {
                return NotFound();
             }
@@ -115,6 +118,7 @@ namespace AppFotos.Controllers.API {
 
          return NoContent();
       }
+
 
       /// <summary>
       /// Determina se a Categoria existe
