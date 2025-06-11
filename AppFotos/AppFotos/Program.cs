@@ -101,36 +101,7 @@ builder.Services.AddControllers()
                 .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler=ReferenceHandler.IgnoreCycles);
 
 
-// *******************************************************************
-// Instalar o package
-// Microsoft.AspNetCore.Authentication.JwtBearer
-//
-// using Microsoft.IdentityModel.Tokens;
-// *******************************************************************
-// JWT Settings
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
-builder.Services.AddAuthentication(options => { })
-   .AddCookie("Cookies",options => {
-      options.LoginPath="/Identity/Account/Login";
-      options.AccessDeniedPath="/Identity/Account/AccessDenied";
-   })
-   .AddJwtBearer("Bearer",options => {
-      options.TokenValidationParameters=new TokenValidationParameters {
-         ValidateIssuer=true,
-         ValidateAudience=true,
-         ValidateLifetime=true,
-         ValidateIssuerSigningKey=true,
-         ValidIssuer=jwtSettings["Issuer"],
-         ValidAudience=jwtSettings["Audience"],
-         IssuerSigningKey=new SymmetricSecurityKey(key)
-      };
-   });
-
-
-// configuração do JWT
-builder.Services.AddScoped<TokenService>();
 
 
 // Adiciona o Swagger
