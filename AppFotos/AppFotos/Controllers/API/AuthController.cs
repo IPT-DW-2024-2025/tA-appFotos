@@ -8,18 +8,18 @@ using Microsoft.EntityFrameworkCore;
 using AppFotos.Data;
 using AppFotos.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AppFotos.Models.ViewModels;
-using Microsoft.AspNetCore.Identity;
-using AppFotos.Services;
 
 namespace AppFotos.Controllers.API {
    [Route("api/[controller]")]
    [ApiController]
-   public class AuthController: ControllerBase {
+   public class AuthController:ControllerBase {
+
       private readonly ApplicationDbContext _context;
       private readonly UserManager<IdentityUser> _userManager;
       private readonly SignInManager<IdentityUser> _signInManager;
@@ -29,44 +29,47 @@ namespace AppFotos.Controllers.API {
          UserManager<IdentityUser> userManager,
          SignInManager<IdentityUser> signInManager,
          IConfiguration config) {
-         _context = context;
-         _userManager = userManager;
-         _signInManager = signInManager;
-         _config = config;
+         _context=context;
+         _userManager=userManager;
+         _signInManager=signInManager;
+         _config=config;
       }
 
 
       [AllowAnonymous]
       [HttpPost("login")]
-      public async Task<IActionResult> Login([FromBody] LoginModel login) { 
+      public async Task<IActionResult> Login([FromBody] LoginDTO login) {
 
+         // procura pelo 'username' na base de dados, 
+         // para determinar se o utilizador existe
          var user = await _userManager.FindByEmailAsync(login.Username);
-         if (user == null) return Unauthorized();
+         if (user==null) return Unauthorized();
 
-         var result = await _signInManager.CheckPasswordSignInAsync(user, login.Password, false);
+         // se chego aqui, é pq o 'username' existe
+         // mas, a password é válida?
+         var result = await _signInManager.CheckPasswordSignInAsync(user,login.Password,false);
          if (!result.Succeeded) return Unauthorized();
 
+         // houve sucesso na autenticação
+         // vou gerar o 'token', associado ao utilizador
          var token = GenerateJwtToken(login.Username);
-         
+
+         // devolvo o 'token'
          return Ok(new { token });
-         /*
+      }
 
-
-         if (login.Username == "user" && login.Password == "1234") {
-
-            var token = GenerateJwtToken(login.Username);
-            return Ok(new { token });
-         */
-         }
-
-       
+      /// <summary>
+      /// gerar o Token
+      /// </summary>
+      /// <param name="username">nome da pessoa associada ao token</param>
+      /// <returns></returns>
       private string GenerateJwtToken(string username) {
          var claims = new[] {
-            new Claim(ClaimTypes.Name, username)
-        };
+         new Claim(ClaimTypes.Name, username)
+     };
 
          var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(s: _config["Jwt:Key"]));
-         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+         var creds = new SigningCredentials(key,SecurityAlgorithms.HmacSha256);
 
          var token = new JwtSecurityToken(
              issuer: _config["Jwt:Issuer"],
@@ -77,90 +80,5 @@ namespace AppFotos.Controllers.API {
 
          return new JwtSecurityTokenHandler().WriteToken(token);
       }
-   
-
-
-/*
-
-
-
-
-
-
-
-   // GET: api/Auth
-   [HttpGet]
-      public async Task<ActionResult<IEnumerable<Categorias>>> GetCategorias() {
-         return await _context.Categorias.ToListAsync();
-      }
-
-      // GET: api/Auth/5
-      [HttpGet("{id}")]
-      public async Task<ActionResult<Categorias>> GetCategorias(int id) {
-         var categorias = await _context.Categorias.FindAsync(id);
-
-         if (categorias == null) {
-            return NotFound();
-         }
-
-         return categorias;
-      }
-
-      // PUT: api/Auth/5
-      // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-      [HttpPut("{id}")]
-      public async Task<IActionResult> PutCategorias(int id, Categorias categorias) {
-         if (id != categorias.Id) {
-            return BadRequest();
-         }
-
-         _context.Entry(categorias).State = EntityState.Modified;
-
-         try {
-            await _context.SaveChangesAsync();
-         }
-         catch (DbUpdateConcurrencyException) {
-            if (!CategoriasExists(id)) {
-               return NotFound();
-            }
-            else {
-               throw;
-            }
-         }
-
-         return NoContent();
-      }
-
-      // POST: api/Auth
-      // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-      [HttpPost]
-      public async Task<ActionResult<Categorias>> PostCategorias(Categorias categorias) {
-         _context.Categorias.Add(categorias);
-         await _context.SaveChangesAsync();
-
-         return CreatedAtAction("GetCategorias", new { id = categorias.Id }, categorias);
-      }
-
-      // DELETE: api/Auth/5
-      [HttpDelete("{id}")]
-      public async Task<IActionResult> DeleteCategorias(int id) {
-         var categorias = await _context.Categorias.FindAsync(id);
-         if (categorias == null) {
-            return NotFound();
-         }
-
-         _context.Categorias.Remove(categorias);
-         await _context.SaveChangesAsync();
-
-         return NoContent();
-      }
-
-      private bool CategoriasExists(int id) {
-         return _context.Categorias.Any(e => e.Id == id);
-      }
-
-      */
-
-
    }
 }

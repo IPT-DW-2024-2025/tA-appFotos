@@ -10,10 +10,10 @@ using AppFotos.Models;
 using Microsoft.AspNetCore.Authorization;
 
 namespace AppFotos.Controllers.API {
-
    [Route("api/[controller]")]
    [ApiController]
-   [Authorize(AuthenticationSchemes = "Bearer")]
+   [Authorize(Roles = "admin")]
+
    public class CategoriasAuthController:ControllerBase {
 
       private readonly ApplicationDbContext _context;
@@ -22,44 +22,59 @@ namespace AppFotos.Controllers.API {
          _context=context;
       }
 
-      // GET: api/CategoriasAuth
+
+      // GET: api/Categorias
+      /// <summary>
+      /// devolve a lista com todas as Categorias
+      /// </summary>
+      /// <returns></returns>
       [HttpGet]
+      [AllowAnonymous]
       public async Task<ActionResult<IEnumerable<Categorias>>> GetCategorias() {
          return await _context.Categorias
-                              .Include(c => c.ListaFotografias)
+                              .Include(c=>c.ListaFotografias)
                               .ToListAsync();
       }
 
-      // GET: api/CategoriasAuth/5
+      /// <summary>
+      /// GET: devolver uma Categorias, 
+      /// quando a solicitação é feita através de HTTP GET
+      /// </summary>
+      /// <param name="id">idenrtificador da categoria pretendida</param>
+      /// <returns></returns>
       [HttpGet("{id}")]
-      public async Task<ActionResult<Categorias>> GetCategorias(int id) {
-         var categorias = await _context.Categorias
-                                        .Include(c => c.ListaFotografias)
-                                        .Where(c => c.Id==id)
-                                        .FirstOrDefaultAsync();
+      public async Task<ActionResult<Categorias>> GetCategoria(int id) {
+         var categoria = await _context.Categorias.FindAsync(id);
 
-         if (categorias==null) {
+         if (categoria==null) {
             return NotFound();
          }
 
-         return categorias;
+         return categoria;
       }
 
-      // PUT: api/CategoriasAuth/5
+      // PUT: api/Categorias/5
       // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+      /// <summary>
+      /// Edição de uma Categoria
+      /// </summary>
+      /// <param name="id">idemtificação da Categoria a editar</param>
+      /// <param name="categoria">Novos dados da Categoria</param>
+      /// <returns></returns>
       [HttpPut("{id}")]
-      public async Task<IActionResult> PutCategorias(int id,Categorias categorias) {
-         if (id!=categorias.Id) {
+      public async Task<IActionResult> PutCategoria(int id,Categorias categoria) {
+         if (id!=categoria.Id) {
             return BadRequest();
          }
 
-         _context.Entry(categorias).State=EntityState.Modified;
+         _context.Entry(categoria).State=EntityState.Modified;
 
          try {
             await _context.SaveChangesAsync();
          }
          catch (DbUpdateConcurrencyException) {
-            if (!CategoriasExists(id)) {
+
+            if (!CategoriaExiste(id)) {
                return NotFound();
             }
             else {
@@ -70,32 +85,49 @@ namespace AppFotos.Controllers.API {
          return NoContent();
       }
 
-      // POST: api/CategoriasAuth
+      // POST: api/Categorias
       // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+      /// <summary>
+      /// Adição de uma Categoria
+      /// </summary>
+      /// <param name="categoria">dados da Categoria a adicionar</param>
+      /// <returns></returns>      
       [HttpPost]
-      public async Task<ActionResult<Categorias>> PostCategorias(Categorias categorias) {
-         _context.Categorias.Add(categorias);
+      public async Task<ActionResult<Categorias>> PostCategoria(Categorias categoria) {
+         _context.Categorias.Add(categoria);
          await _context.SaveChangesAsync();
 
-         return CreatedAtAction("GetCategorias",new { id = categorias.Id },categorias);
+         return CreatedAtAction("GetCategorias",new { id = categoria.Id },categoria);
       }
 
-      // DELETE: api/CategoriasAuth/5
+      // DELETE: api/Categorias/5
+      /// <summary>
+      /// Apagar uma Categoria
+      /// </summary>
+      /// <param name="id">identificador da Categoria a apagar</param>
+      /// <returns></returns>
       [HttpDelete("{id}")]
-      public async Task<IActionResult> DeleteCategorias(int id) {
-         var categorias = await _context.Categorias.FindAsync(id);
-         if (categorias==null) {
+      public async Task<IActionResult> DeleteCategoria(int id) {
+         var categoria = await _context.Categorias.FindAsync(id);
+         if (categoria==null) {
             return NotFound();
          }
 
-         _context.Categorias.Remove(categorias);
+         _context.Categorias.Remove(categoria);
          await _context.SaveChangesAsync();
 
          return NoContent();
       }
 
-      private bool CategoriasExists(int id) {
+
+      /// <summary>
+      /// Determina se a Categoria existe
+      /// </summary>
+      /// <param name="id">identificador da Categoria a procurar</param>
+      /// <returns>'true', se a categoria existe, senão 'false'</returns>
+      private bool CategoriaExiste(int id) {
          return _context.Categorias.Any(e => e.Id==id);
       }
    }
+
 }
