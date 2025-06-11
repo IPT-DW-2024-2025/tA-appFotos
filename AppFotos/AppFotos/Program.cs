@@ -90,6 +90,9 @@ builder.Services.AddControllers()
 //builder.Services.AddRazorPages(); // importante para Identity scaffolding (Login, Register, etc.)
 
 
+// declarar o serviço do Signal R
+builder.Services.AddSignalR();
+
 
 // Eliminar a proteção de 'ciclos' qd se faz uma pesquisa que envolva um relacionamento 1-N em Linq
 // https://code-maze.com/aspnetcore-handling-circular-references-when-working-with-json/
@@ -192,5 +195,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+// cria uma 'ponte' entre o nosso serviço Signal R (o GostosHub)
+// e o javascript do browser
+app.MapHub<GostosHub>("/gostoshub");
+
 
 app.Run();
