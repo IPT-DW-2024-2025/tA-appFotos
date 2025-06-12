@@ -116,7 +116,7 @@ https://learn.microsoft.com/en-us/aspnet/core/signalr/javascript-client?view=asp
    // constrói o objeto JS que vai interagir com o HUB
    // NOTA: o fluxo todo de dados pode ser visualizado através do separador 'REDE'
    const connection = new signalR.HubConnectionBuilder()
-      .withUrl("/gostoshub")
+      .withUrl("/aulas/gostoshub")
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
@@ -129,8 +129,8 @@ https://learn.microsoft.com/en-us/aspnet/core/signalr/javascript-client?view=asp
          // ao recebermos uma resposta onde nome do método é 'UpdateLike' fazemos o update
          connection.on("UpdateLike", (idFoto, numGostos, gostei) => {
             document.getElementById("foto" + idFoto).innerText = numGostos;
-            if (gostei) { document.getElementById("img" + idFoto).src = "/imagensBase/gostei.png"; }
-            else { document.getElementById("img" + idFoto).src = "/imagensBase/gostar.png"; }
+            if (gostei) { document.getElementById("img" + idFoto).src = "/aulas/imagensBase/gostei.png"; }
+            else { document.getElementById("img" + idFoto).src = "/aulas/imagensBase/gostar.png"; }
          });
 
       } catch (err) {
